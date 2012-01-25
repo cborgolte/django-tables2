@@ -11,7 +11,7 @@
         {% for column in table.columns %}
         {% if column.sortable %}
             {% with column.order_by as ob %}
-            <th class="{% spaceless %}{% if column.sortable %}sortable {% endif %}{% if ob %}{% if ob.is_descending %}desc{% else %}asc{% endif %}{% endif %}{% endspaceless %}"><a href="{% querystring table.prefixed_order_by_field=ob.opposite|default:column.name %}">{{ column.header }}</a></th>
+            <th class="{% spaceless %}{% if column.sortable %}sortable {% endif %}{% if ob %}{% if ob.is_descending %}desc{% else %}asc{% endif %}{% endif %}{% endspaceless %}"><a href="{% multisortquerystring table.prefixed_order_by_field=ob.opposite|default:column.name %}">{{ column.header }}</a></th>
             {% endwith %}
         {% else %}
             <th>{{ column.header }}</th>
