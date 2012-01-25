@@ -91,6 +91,46 @@ def set_url_param(parser, token):
     return SetUrlParamNode(qschanges)
 
 
+class MultiSortQuerystringNode(Node):
+    def __init__(self, params):
+        self.params = params
+
+    def render(self, context):
+        request = context.get('request', None)
+        if not request:
+            return ""
+        params = request.GET.copy()
+        for key, value in self.params.iteritems():
+            key = key.resolve(context)
+            value = value.resolve(context)
+            if key not in ("", None):
+                values = params.getlist(key)
+                if value in values:
+                    continue
+                reverse = value[1:] if value.startswith('-') else "-%s" % value
+                if reverse in values:
+                    indx = values.index(reverse)
+                    values[indx] = value
+                else:
+                    values.append(value)
+                params.setlist(key, values)
+        return "?" + params.urlencode()
+
+
+@register.tag
+def multisortquerystring(parser, token):
+    """Special querystring for sorting by multiple columns."""
+    bits = token.split_contents()
+    tag = bits.pop(0)
+    try:
+        return MultiSortQuerystringNode(token_kwargs(bits, parser))
+    finally:
+        # ``bits`` should now be empty, if this is not the case, it means there
+        # was some junk arguments that token_kwargs couldn't handle.
+        if bits:
+            raise TemplateSyntaxError("Malformed arguments to '%s'" % tag)
+
+
 class QuerystringNode(Node):
     def __init__(self, params):
         super(QuerystringNode, self).__init__()
